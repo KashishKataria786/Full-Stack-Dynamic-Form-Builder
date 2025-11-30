@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { fetchFormSchema } from "../api/Forms.js";
 import FieldComponent from "../components/ui/FieldComponent.jsx";
 import DynamicTransitionLoadingSpinner from "../components/ui/DynamicTransitionLoadingSpinner.jsx";
 import DynamicErrorComponent from "../components/ui/DynamicErrorComponent.jsx";
 import axios from "axios";
-
+import {toast} from 'react-toastify'
 const SubmitPage = () => {
   const { key } = useParams();
+  const navigate= useNavigate();
 
-  // fetch form schema
   const {
     data: formResponse,
     isLoading,
@@ -38,7 +38,7 @@ const SubmitPage = () => {
   const submitMutation = useMutation({
     mutationFn: async ({ formId, formData }) => {
       const { data } = await axios.post(
-        `http://localhost:5003/api/submittions/submit/${formId}`,
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/submittions/submit/${formId}`,
         { formData }
       );
       return data;
@@ -58,6 +58,9 @@ const SubmitPage = () => {
       formId: form._id,
       formData: formDataArray,
     });
+
+    toast.success("Form Submitted Successfully")
+    navigate('/');
 
   };
   

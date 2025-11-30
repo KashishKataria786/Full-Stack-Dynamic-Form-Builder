@@ -5,7 +5,7 @@ export const fetchParticularForm = async ({ queryKey }) => {
     if (!formId) {
         throw new Error("Form ID is missing.");
     }
-    const { data } = await axios.get(`http://localhost:5003/api/form/${formId}`);
+    const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/form/${formId}`);
     return data;
 };
 
@@ -15,13 +15,13 @@ export const fetchFormSchema = async ({ queryKey }) => {
     if (!formKey) throw new Error("Form Key is Missing");
 
     const { data } = await axios.get(
-        `http://localhost:5003/api/form/key/${encodeURIComponent(formKey)}`
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/form/key/${encodeURIComponent(formKey)}`
     );
     return data.data;
 };
 
 
 export const fetchAllForms = async()=>{
-    const {data} = await axios.get('http://localhost:5003/api/form/all-forms')
+    const {data} = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/form/all-forms`)
     return data;
 }

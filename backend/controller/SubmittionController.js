@@ -4,7 +4,7 @@ export const getAllSubmissionsBasedOnId = async(req,res)=>{
     const {id}=req.params;
     if(!id)return res.status(404).send({success:false,message:"Missing Id "});
     try{
-        const data = await SubmissionModel.findOne({_id:id});
+        const data = await SubmissionModel.findOne({_id:id}).sort({createdAt:-1});
         if(!data)return res.status(400).send({success:false, message:"Data not Found"});
         return res.status(200).send({success:true, message:"Submisstion REtrieved Successfully", data:data});
 

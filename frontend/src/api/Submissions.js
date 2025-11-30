@@ -4,6 +4,6 @@ export const fetchAllSubmittionsById= async({queryKey})=>{
         if (!formId) {
             throw new Error("Form ID is missing.");
         }
-        const { data } = await axios.get(`http://localhost:5003/api/submittions/submissions/${formId}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/submittions/submissions/${formId}`);
         return data;
 }

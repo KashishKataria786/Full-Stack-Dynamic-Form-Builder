@@ -1,37 +1,6 @@
 import FormModel from "../models/FormModel.js";
 import { SubmissionModel } from "../models/SubmissionModel.js";
 
-// export const createForm = async (req,res) => {
-//   try {
-//     const { key, title, description } = req.body;
-//     if (!key || !title || !description)
-//       return res
-//         .status(400)
-//         .send({ success: false, message: "Missing Fields" });
-//     const form = await FormModel.create({
-//       key: key,
-//       title: title,
-//       description: description,
-//     });
-//     if (!form)
-//       return res
-//         .status(400)
-//         .send({ success: false, message: "Error in Creating Form" });
-
-//     const submittionInstance= await SubmissionModel.create({form:form._id, data:[]})
-//     return res
-//       .status(201)
-//       .send({
-//         success: true,
-//         message: "Form Created Successfully",
-//         data: form,
-//       });
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .send({ success: false, message: "Internal Server Error", error: error });
-//   }
-// };
 
 export const createForm = async (req, res) => {
     try {
@@ -92,7 +61,7 @@ export const createForm = async (req, res) => {
 
 export const getAllForm = async(req,res)=>{
     try {
-        const forms = await FormModel.find();
+        const forms = await FormModel.find().sort({createdAt:-1});
         return res.status(200).send({success:true, message:"Forms retrieved", data:forms})
     } catch (error) {
         return res

@@ -1,10 +1,12 @@
 import React , {useState, useEffect} from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom'; 
+import { useParams,useNavigate } from 'react-router-dom'; 
 import { fetchParticularForm } from '../api/Forms.js'; 
 import FieldComponent from '../components/ui/FieldComponent.jsx';
 import DynamicTransitionLoadingSpinner from '../components/ui/DynamicTransitionLoadingSpinner.jsx';
 import DynamicErrorComponent from '../components/ui/DynamicErrorComponent.jsx';
+import {toast} from 'react-toastify'
+import axios from 'axios'
 
 // Initial state for a single field definition form
 const initialSchemaState = {
@@ -20,7 +22,7 @@ const initialSchemaState = {
 
 const DynamicFormPage = () => {
     const { id } = useParams(); 
-    
+    const navigate= useNavigate();
     // --- QUERY LOGIC (Kept but separated for clarity) ---
     const { 
         data: formResponse,
@@ -41,7 +43,6 @@ const DynamicFormPage = () => {
     
     // 2. STATE FOR THE TEMPORARY SCHEMA ARRAY (Right side)
     const [formFieldsArray, setFormFieldsArray] = useState([]);
-
     // List of allowed types from your schema
     const allowedTypes = ["text", "email", "number", "textarea", "select", "checkbox", "date"];
     
@@ -112,6 +113,35 @@ const DynamicFormPage = () => {
         setOptionsInput(''); // Also clear the options input
 
         console.log("Field added to temporary schema array:", finalData);
+    };
+    
+ const handleFinalSubmittion = async () => {
+        // 'id' is available from the component's scope
+        if (!id) {
+            toast.error("Error: Form ID is missing.");
+            return;
+        }
+
+        try {
+            // Ensure you use the correct state variable holding the collected fields
+            // Assuming your state is named 'formFieldsArray'
+            const finalSchema = await axios.post(
+                `${import.meta.env.VITE_BACKEND_BASE_URL}/form/add-fields/${id}`, 
+                { fields: formFieldsArray } // Send the temporary schema array
+            );
+
+            // 3. Handle successful response
+            toast.success("Form schema successfully saved!");
+            console.log("Submission successful:", finalSchema.data);
+            navigate(`/form/${form.key}`)
+            // Optional: You might want to navigate away or clear the form here.
+            
+        } catch (error) {
+            console.error("Submission error:", error);
+            // Use error.response.data.message for more specific backend errors
+            const errorMessage = error.response?.data?.message || "An unexpected error occurred.";
+            toast.error(`Form Not Created: ${errorMessage}`);
+        }
     };
 
     // --- JSX Helper Classes ---
@@ -272,6 +302,12 @@ const DynamicFormPage = () => {
                                 {formFieldsArray.map((field, index) => (
                                     <FieldComponent key={field.name + index} data={field} /> 
                                 ))}
+                                <button
+                                onClick={handleFinalSubmittion}
+                                className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition duration-150"
+                            >
+                                Create Form
+                            </button>
                             </form>
                         ) : (
                             <div className="p-8 text-center text-gray-500 border border-dashed rounded-lg">
