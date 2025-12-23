@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import { lazy, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchFormSchema } from "../api/Forms.js";
-import FieldComponent from "../components/ui/FieldComponent.jsx";
 import DynamicTransitionLoadingSpinner from "../components/ui/DynamicTransitionLoadingSpinner.jsx";
-import DynamicErrorComponent from "../components/ui/DynamicErrorComponent.jsx";
 import axios from "axios";
-import {toast} from 'react-toastify'
+import { toast } from "react-toastify";
+
+const DynamicErrorComponent = lazy(() =>
+  import("../components/ui/DynamicErrorComponent.jsx")
+);
+const FieldComponent = lazy(() =>
+  import("../components/ui/FieldComponent.jsx")
+);
+const FormNotActive = lazy(() => import("../components/ui/FormNotActive.jsx"));
+
 const SubmitPage = () => {
   const { key } = useParams();
-  const navigate= useNavigate();
+  const navigate = useNavigate();
 
   const {
     data: formResponse,
@@ -23,8 +30,6 @@ const SubmitPage = () => {
     staleTime: 1000 * 60 * 5,
   });
 
- 
-  // ---------------- responses state ----------------
   const [responses, setResponses] = useState({});
 
   const handleFieldChange = (fieldName, value) => {
@@ -34,11 +39,10 @@ const SubmitPage = () => {
     }));
   };
 
-  // ---------------- submit mutation ----------------
   const submitMutation = useMutation({
     mutationFn: async ({ formId, formData }) => {
       const { data } = await axios.post(
-        `${import.meta.env.VITE_BACKEND_BASE_URL}/submittions/submit/${formId}`,
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/submissions/submit/${formId}`,
         { formData }
       );
       return data;
@@ -48,23 +52,23 @@ const SubmitPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form?._id) return;
-    
+
     const formDataArray = form.fields.map((field) => ({
+      label: field.label,
       name: field.name,
       value: responses[field.name] ?? "",
     }));
 
-    const submitted=submitMutation.mutate({
+    const submitted = submitMutation.mutate({
       formId: form._id,
       formData: formDataArray,
     });
 
-    toast.success("Form Submitted Successfully")
-    navigate('/');
-
+    toast.success("Form Submitted Successfully");
+    navigate("/");
   };
-  
- if (isLoading) {
+
+  if (isLoading) {
     return (
       <DynamicTransitionLoadingSpinner value={"Getting your form ready..."} />
     );
@@ -77,6 +81,10 @@ const SubmitPage = () => {
         : error?.message || "A network error occurred.";
 
     return <DynamicErrorComponent message={message} />;
+  }
+
+  if (form?.isActive === false) {
+    return <FormNotActive />;
   }
 
   return (

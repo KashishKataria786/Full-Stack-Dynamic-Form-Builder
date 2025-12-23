@@ -15,7 +15,7 @@ const app = express();
 dotenv.config();
 app.use(morgan("combined"));
 app.use(express.json());
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(bodyParser.json());
@@ -28,7 +28,7 @@ app.get("/", (req, res) =>
 );
 // Routers
 app.use("/api/form", FormRouter);
-app.use('/api/submittions',SubmissionRouter);
+app.use('/api/submissions',SubmissionRouter);
 
 const PORT = process.env.PORT || 5003;
 

@@ -1,24 +1,30 @@
 import { SubmissionModel } from "../models/SubmissionModel.js";
+import FormModel from '../models/FormModel.js'
+export const getAllSubmissionsBasedOnId = async (req, res) => {
+    const { id } = req.params;
 
-export const getAllSubmissionsBasedOnId = async(req,res)=>{
-    const {id}=req.params;
-    if(!id)return res.status(404).send({success:false,message:"Missing Id "});
-    try{
-        const data = await SubmissionModel.findOne({_id:id}).sort({createdAt:-1});
-        if(!data)return res.status(400).send({success:false, message:"Data not Found"});
-        return res.status(200).send({success:true, message:"Submisstion REtrieved Successfully", data:data});
-
-    }catch(error){
-        console.error("Error fetching submission but ID:", error);
-        
-                return res.status(500).json({
-                    success: false,
-                    message: "Internal Server Error while retrieving submiission.",
-                    error: error.message || "Unknown error"
-                });
+    if (!id) {
+        return res.status(404).send({ success: false, message: "Missing Id" });
     }
-}
 
+    try {
+        const data = await SubmissionModel.findOne({ form: id }).sort({ createdAt: -1 });
+
+        return res.status(200).send({
+            success: true,
+            message: "Submissions Retrieved Successfully",
+            data: data 
+        });
+
+    } catch (error) {
+        console.error("Error fetching submission by ID:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error while retrieving submission.",
+            error: error.message || "Unknown error"
+        });
+    }
+};
 
 export const addDataToForm = async (req, res) => {
     const { id: formId } = req.params; // Renaming 'id' to 'formId' for clarity
@@ -88,3 +94,34 @@ export const addDataToForm = async (req, res) => {
         });
     }
 };
+
+export const getAllFields= async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const form = await FormModel.findById(id).select("fields");
+
+    if (!form) {
+      return res.status(404).send({
+        success: false,
+        message: "Form not found",
+      });
+    }
+
+    const labels = form.fields.map(field => field.label);
+
+    return res.status(200).send({
+      success: true,
+      message: "Field labels retrieved successfully",
+      data: labels,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+

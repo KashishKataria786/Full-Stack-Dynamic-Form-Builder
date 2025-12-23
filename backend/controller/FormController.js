@@ -70,6 +70,39 @@ export const getAllForm = async(req,res)=>{
     }
 }
 
+export const changeStatusOfForm = async (req, res) => {
+  const { id } = req.params;
+  const { isActive } = req.body;
+
+  try {
+    const updatedStatus = await FormModel.findByIdAndUpdate(
+      id,
+      { isActive },              
+      { new: true }         
+    );
+
+    if (!updatedStatus) {
+      return res.status(404).send({
+        success: false,
+        message: "Form not found",
+      });
+    }
+
+    return res.status(200).send({
+      success: true,
+      message: "Status updated successfully",
+      data: updatedStatus,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+
 export const getParticularForm = async(req,res)=>{
     const {id} =req.params;
     try {
@@ -199,6 +232,20 @@ export const addMultipleFieldsToForm = async (req, res) => {
             });
     }
 };
+
+
+export const deleteForm =async(req,res)=>{
+    const {id}=req.params;
+    try{
+        const deleted = await FormModel.findByIdAndDelete(id);
+        if(!deleted){
+            return res.status(400).send({success:false,message:"Error in Deleting The Form"});
+        }
+        return res.status(200).send({success:true, message:"Form Deleted Successfuly", data:deleted});
+    }catch(error){
+        return res.status(500).send({success:false, message:"Internal Server Error"});
+    }
+}
 
 
 

@@ -43,6 +43,8 @@ const DynamicFormPage = () => {
     
     // 2. STATE FOR THE TEMPORARY SCHEMA ARRAY (Right side)
     const [formFieldsArray, setFormFieldsArray] = useState([]);
+    // if(formResponse &&formResponse?.data)formFieldsArray.push(formResponse?.data?.fields);
+    // console.log("FORM:",formFieldsArray);
     // List of allowed types from your schema
     const allowedTypes = ["text", "email", "number", "textarea", "select", "checkbox", "date"];
     
