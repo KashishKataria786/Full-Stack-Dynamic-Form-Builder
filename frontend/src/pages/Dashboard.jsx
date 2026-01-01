@@ -21,7 +21,7 @@ const Dashboard = () => {
 
 const navigateToFormBuilder = (id) => {
     setIsModalOpen(false);
-    navigate(`/create/${id}`);
+    navigate(`/edit/${id}`);
 };
 
 const navigateToSubmissions = (id) => {

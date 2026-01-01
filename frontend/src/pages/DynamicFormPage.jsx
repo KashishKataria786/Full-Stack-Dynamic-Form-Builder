@@ -1,12 +1,13 @@
-import React , {useState, useEffect} from 'react';
+import React , {useState, useEffect, lazy} from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams,useNavigate } from 'react-router-dom'; 
 import { fetchParticularForm } from '../api/Forms.js'; 
 import FieldComponent from '../components/ui/FieldComponent.jsx';
 import DynamicTransitionLoadingSpinner from '../components/ui/DynamicTransitionLoadingSpinner.jsx';
-import DynamicErrorComponent from '../components/ui/DynamicErrorComponent.jsx';
 import {toast} from 'react-toastify'
 import axios from 'axios'
+
+const DynamicErrorComponent= lazy(()=>import('../components/ui/DynamicErrorComponent.jsx'));
 
 // Initial state for a single field definition form
 const initialSchemaState = {
@@ -43,6 +44,7 @@ const DynamicFormPage = () => {
     
     // 2. STATE FOR THE TEMPORARY SCHEMA ARRAY (Right side)
     const [formFieldsArray, setFormFieldsArray] = useState([]);
+    const [editingIndex, setEditingIndex] = useState(null);
     // if(formResponse &&formResponse?.data)formFieldsArray.push(formResponse?.data?.fields);
     // console.log("FORM:",formFieldsArray);
     // List of allowed types from your schema
@@ -71,6 +73,14 @@ const DynamicFormPage = () => {
             }));
         }
     }, [optionsInput, fieldData.type, showOptions]);
+
+    // When form loads, populate temporary schema array with existing fields
+    useEffect(() => {
+        const existing = formResponse?.data?.fields;
+        if (existing && Array.isArray(existing)) {
+            setFormFieldsArray(existing);
+        }
+    }, [formResponse]);
 
     const handleFieldChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -108,13 +118,46 @@ const DynamicFormPage = () => {
         }
 
         // 3. Save the field to the temporary array state
-        setFormFieldsArray(prevArray => [...prevArray, finalData]);
+        if (editingIndex !== null && editingIndex >= 0) {
+            setFormFieldsArray(prev => {
+                const next = [...prev];
+                next[editingIndex] = finalData;
+                return next;
+            });
+            setEditingIndex(null);
+        } else {
+            setFormFieldsArray(prevArray => [...prevArray, finalData]);
+        }
 
         // Reset the input form for the next field
         setFieldData(initialSchemaState);
         setOptionsInput(''); // Also clear the options input
 
         console.log("Field added to temporary schema array:", finalData);
+    };
+
+    const handleEditField = (index) => {
+        const f = formFieldsArray[index];
+        if (!f) return;
+        setFieldData({ ...f });
+        setOptionsInput(Array.isArray(f.options) ? f.options.join(', ') : '');
+        setEditingIndex(index);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDeleteField = (index) => {
+        setFormFieldsArray(prev => prev.filter((_, i) => i !== index));
+        if (editingIndex === index) {
+            setEditingIndex(null);
+            setFieldData(initialSchemaState);
+            setOptionsInput('');
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingIndex(null);
+        setFieldData(initialSchemaState);
+        setOptionsInput('');
     };
     
  const handleFinalSubmittion = async () => {
@@ -279,13 +322,24 @@ const DynamicFormPage = () => {
                                 />
                             </div>
 
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition duration-150"
-                            >
-                                Add Field to Schema
-                            </button>
+                            {/* Submit / Save Buttons */}
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition duration-150"
+                                >
+                                    {editingIndex !== null ? 'Save Changes' : 'Add Field to Schema'}
+                                </button>
+                                {editingIndex !== null && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="py-3 px-4 bg-gray-200 text-gray-800 font-medium rounded-md shadow-sm hover:bg-gray-300 transition duration-150"
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
                         </form>
                     </div>
                 </div> 
@@ -302,14 +356,35 @@ const DynamicFormPage = () => {
                         {formFieldsArray.length > 0 ? (
                             <form className="space-y-6">
                                 {formFieldsArray.map((field, index) => (
-                                    <FieldComponent key={field.name + index} data={field} /> 
+                                    <div key={field.name + index} className="flex items-start justify-between border-b pb-3">
+                                        <div className="flex-1">
+                                            <FieldComponent data={field} />
+                                        </div>
+                                        <div className="ml-4 flex-shrink-0 flex flex-col space-y-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleEditField(index)}
+                                                className="text-indigo-600 hover:underline text-sm"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteField(index)}
+                                                className="text-red-600 hover:underline text-sm"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
                                 ))}
                                 <button
-                                onClick={handleFinalSubmittion}
-                                className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition duration-150"
-                            >
-                                Create Form
-                            </button>
+                                    type="button"
+                                    onClick={handleFinalSubmittion}
+                                    className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition duration-150"
+                                >
+                                    Create Form
+                                </button>
                             </form>
                         ) : (
                             <div className="p-8 text-center text-gray-500 border border-dashed rounded-lg">

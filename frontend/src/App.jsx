@@ -16,6 +16,7 @@ function App() {
           <Route path="/" element={<Homepage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create/:id" element={<DynamicFormPage />} />
+          <Route path="/edit/:id" element={<DynamicFormPage />} />
           <Route path="/form/:key" element={<SubmitPage />} />
           <Route path="/form/submissions/:id" element={<SubmissionsPage />} />
           <Route path="*" element={<Notfound />} />
