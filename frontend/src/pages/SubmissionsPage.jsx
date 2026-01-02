@@ -19,6 +19,7 @@ const SubmissionsPage = () => {
 
   
   const normalizeSubmission = (submissionArray) => {
+    if(submissionArray.length===0)return [];
     return submissionArray.reduce((acc, item) => {
       const key = item.label || item.name;
       acc[key] = item.value;

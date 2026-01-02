@@ -2,7 +2,7 @@ import {lazy , Suspense, useState} from 'react'
 import {  FileText } from "lucide-react";
 import { BsToggleOn, BsToggleOff } from "react-icons/bs";
 import {useNavigate}from 'react-router-dom'
-import DynamicTransitionLoadingSpinner from './DynamicTransitionLoadingSpinner.jsx'
+import DynamicPageTransitionComponent from './DynamicPageTransitionComponent.jsx'
 
 const DeleteFormComponent = lazy(()=>import('./DeleteFormComponent.jsx'));
 const Modal= lazy(()=>import('./Modal.jsx'));
@@ -14,7 +14,7 @@ const FormTable = ({forms=null, handleStatusChange, navigateToFormBuilder, navig
 
   const navigate= useNavigate();
   if(forms===null){
-    return <DynamicTransitionLoadingSpinner/>
+    return <DynamicPageTransitionComponent/>
   }
     if (forms&&forms.length === 0) {
       return (

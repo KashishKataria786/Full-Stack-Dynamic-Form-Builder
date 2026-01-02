@@ -196,7 +196,10 @@ const DynamicFormPage = () => {
     // --- Loading/Error Handling ---
     if (isLoading){return <DynamicTransitionLoadingSpinner value={"Getting your form ready..."}/>}
     const form = formResponse?.data;
-    
+    if(!formFieldsArray.length===0){
+
+        return <h1>No</h1>
+    }
     if (isError || !id || !form) {
         const message = !id || !form ? 
             `Form with key "${id}" was not found.` : 

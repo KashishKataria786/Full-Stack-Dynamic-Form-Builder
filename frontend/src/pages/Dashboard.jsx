@@ -1,61 +1,61 @@
-import  { useState, lazy, useEffect, Suspense } from "react";
+import { useState, lazy, useEffect, Suspense } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Plus, FileText, TrendingUp, X } from "lucide-react";
 import { fetchAllForms } from "../api/Forms.js";
-import{ toast} from 'react-toastify'
+import { toast } from "react-toastify";
 import DynamicTransitionLoadingSpinner from "../components/ui/DynamicTransitionLoadingSpinner.jsx";
-
-const Modal = lazy(()=>import('../components/ui/Modal.jsx'));
-const FormTable = lazy(()=>import('../components/ui/FormTable.jsx'))
-const CreateFormComponent = lazy(()=>import('../components/ui/CreateFormComponent.jsx'));
-
+import DynamicPageTransitionComponent from '../components/ui/DynamicPageTransitionComponent.jsx';
+const Modal = lazy(() => import("../components/ui/Modal.jsx"));
+const FormTable = lazy(() => import("../components/ui/FormTable.jsx"));
+const CreateFormComponent = lazy(() =>
+  import("../components/ui/CreateFormComponent.jsx")
+);
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [forms, setForms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  let active = 0;
 
 
-const navigateToFormBuilder = (id) => {
+  const navigateToFormBuilder = (id) => {
     setIsModalOpen(false);
     navigate(`/edit/${id}`);
-};
+  };
 
-const navigateToSubmissions = (id) => {
+  const navigateToSubmissions = (id) => {
     navigate(`/form/submissions/${id}`);
-};
+  };
 
-const handleStatusChange = async (id, prevStatus) => {
-  const newStatus = !prevStatus;
+  const handleStatusChange = async (id, prevStatus) => {
+    const newStatus = !prevStatus;
 
-  try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_BACKEND_BASE_URL}/form/status-update/${id}`,
-      { isActive: newStatus }
-    );
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/form/status-update/${id}`,
+        { isActive: newStatus }
+      );
 
-    if (!response?.data?.success) {
-      toast.error("Error in status change");
-      return;
+      if (!response?.data?.success) {
+        toast.error("Error in status change");
+        return;
+      }
+
+      // Update UI immediately (Optimistic Update)
+      setForms((prevForms) =>
+        prevForms.map((form) =>
+          form._id === id ? { ...form, isActive: newStatus } : form
+        )
+      );
+
+      toast.success("Status updated successfully");
+    } catch (error) {
+      toast.error("Internal Server Error");
     }
+  };
 
-    // Update UI immediately (Optimistic Update)
-    setForms((prevForms) =>
-      prevForms.map((form) =>
-        form._id === id ? { ...form, isActive: newStatus } : form
-      )
-    );
-
-    toast.success("Status updated successfully");
-  } catch (error) {
-    toast.error("Internal Server Error");
-  }
-};
-
-useEffect(() => {
+  useEffect(() => {
     setIsLoading(true);
     fetchAllForms()
       .then((data) => {
@@ -67,8 +67,6 @@ useEffect(() => {
         setIsLoading(false);
       });
   }, []);
-
-
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 lg:p-10">
@@ -118,18 +116,27 @@ useEffect(() => {
       </div>
 
       {/* Main Content: Forms Table */}
-      
-        {<FormTable forms={forms} handleStatusChange={handleStatusChange} navigateToFormBuilder={navigateToFormBuilder} navigateToSubmissions={navigateToSubmissions}/>}
+
+      {
+        isLoading ? <DynamicPageTransitionComponent value={"Loading Forms"}/> :<FormTable
+          forms={forms}
+          handleStatusChange={handleStatusChange}
+          navigateToFormBuilder={navigateToFormBuilder}
+          navigateToSubmissions={navigateToSubmissions}
+        />
+      }
 
       {/* Form Creation Modal */}
-     <Suspense fallback={<DynamicTransitionLoadingSpinner/>}>
-       {isModalOpen&&<Modal
-        isOpen={isModalOpen}
-        handleClose={() => setIsModalOpen(false)}
-        title="Create New Form Definition"
-      >
-        <CreateFormComponent />
-      </Modal>}
+      <Suspense fallback={<DynamicTransitionLoadingSpinner />}>
+        {isModalOpen && (
+          <Modal
+            isOpen={isModalOpen}
+            handleClose={() => setIsModalOpen(false)}
+            title="Create New Form Definition"
+          >
+            <CreateFormComponent />
+          </Modal>
+        )}
       </Suspense>
     </div>
   );
