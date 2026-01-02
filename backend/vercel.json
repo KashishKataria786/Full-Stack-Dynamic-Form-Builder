@@ -1,4 +1,3 @@
-
 {
   "version": 2,
   "builds": [
@@ -7,10 +6,10 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "server.js"
+      "source": "/(.*)",
+      "destination": "/server.js"
     }
   ],
   "env": {
@@ -20,18 +19,9 @@
     {
       "source": "/form/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS, PUT, PATCH, DELETE" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
       ]
     }
   ]
